@@ -1,5 +1,5 @@
 # MP3-Player
-Objetivo do programa é substituir outros programas para reprodução de arquivos locais, com funcionalidades objetivas, além de um design simples e funcional.  
+O objetivo do programa é substituir outros programas para reprodução de arquivos locais, com funcionalidades objetivas, além de um design simples e funcional.  
   
 **Programado utilizando-se apenas Python 3.9.12**
 
