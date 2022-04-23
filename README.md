@@ -1,15 +1,17 @@
-# MP3-Player
+# Player de Pobre
 O objetivo do programa é substituir outros programas para reprodução de arquivos locais, com funcionalidades objetivas, além de um design simples e funcional.  
   
 **Programado utilizando Python 3.10.4**
 
 ## Funcionalidades:
 
- - Toca musicas em formato MP3, em modo aleatório ou não
+ - Toca músicas em formato MP3, em modo aleatório ou não
  
  - Pasta raiz personalizável
 
  - Suas playlists ficam organizadas
+
+ - Você pode usar botões de mídia (mouse e teclado) para controlar as músicas
 
 ## Menu
 ![Tela](https://user-images.githubusercontent.com/11367867/162610585-12e0a599-8db9-467c-9d08-04534fb825cf.jpg "Tela")  
