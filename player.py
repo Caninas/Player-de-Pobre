@@ -1,3 +1,4 @@
+import pickle
 from io import BytesIO
 from os import listdir, path, scandir
 from os.path import isdir
@@ -5,11 +6,9 @@ from random import randrange
 from time import gmtime, sleep, strftime
 
 import PySimpleGUI as sg
-import stagger
 from mutagen import File
 from mutagen.mp3 import MP3
 from PIL import Image
-from PIL.Image import open
 from pygame import mixer
 from pynput.keyboard import Key, Listener
 
@@ -18,80 +17,93 @@ from tela import Tela
 
 class Player:
     def __init__(self):
-        mixer.init()
+        mixer.init() 
+        
         self.musica_tocando = ""
         self.k = 0
-        self.indice_playlist = []
-        self.indice_selecionado = 0
+        
 
         self.mixer = mixer.music
         self.mixer_puro = mixer
         self.mixer.set_volume(0.5)
 
-        self.path_pastas = ""
-        self.pastas = ""
-        self.pasta_selecionada = ""
-        self.lista_musicas = ""
+        self.path_pastas = ""           # path pastas (playlists)
+        self.pastas = ""                # nome pastas (playlists) - formatado para tela
+        self.pasta_selecionada = ""     # path da playlist selecionada
 
-        self.historico_musicas_indice = []
-        self.random_hist = []
+        self.lista_musicas = []         # lista nome musicas da playlist selecionada
+        self.indice_playlist = []       # indice da playlist selecionada
+        self.indice_selecionado = 0     # indice musica selecionada
+
+        self.path_dados = ""
+        self.path_icones = ""
+
+        self.historico_musicas_indice = []  # historico para voltar musicas
+        self.random_hist = []               # historico para ao avançar musicas no aleatorio n repetir alguma passada
 
         self.aleatorio = False
         self.trocou = False
         self.playpause = ""
         self.volume_padrao = 0.5
-        self.volume = 0.5
+        self.volume_atual = 0.5
 
         self.tela = Tela(self)
-        #self.tela.tela_principal[1].bind(bind_string, key)
 
-    def mostrar_playlists(self, path):
-        self.path_pastas = path
+    def carregar_pasta(self):                       # carrega playlists da sessao passada
+        try:
+            self.path_pastas = pickle.load(open(f"{self.path_dados}/persist.pkl", "rb"))
+            self.mostrar_playlists()
+        except:
+            pass
 
-        self.pastas = [[y.split("\\")[1]] for y in [x.path for x in scandir(f"{path}") if isdir(x)]]
+    def mostrar_playlists(self, path = None):       # mostra playlist do browse ou historico, alem de formatar para mostrar na tela
+        if path != None:
+            self.path_pastas = path
+            pickle.dump(self.path_pastas, open(f"{self.path_dados}/persist.pkl", "wb"))
+
+        self.pastas = [[y.split("\\")[1]] for y in [x.path for x in scandir(f"{self.path_pastas}") if isdir(x)]]
 
         self.tela.tela_principal["playlist"].update(values=self.pastas)
 
-    def selecionar_playlist(self, pasta_selecionada: int):
+    def selecionar_playlist(self, pasta_selecionada: int):      #formata as musicas da playlist selecionada e mostra na tela
         excp = 0
         self.pasta_selecionada = f"{self.path_pastas}/{self.pastas[pasta_selecionada[0]][0]}/"
-        self.lista_musicas = [[x] for x in listdir(self.pasta_selecionada) if x.split(".")[1] == "mp3"]
-        
+        self.lista_musicas = []
+
+        for x in listdir(self.pasta_selecionada):
+            try:
+                x2 = x.split(".")
+                if not isdir(x) and x2[len(x2)-1] == "mp3":           #! mudar dps para poder selecionar dir
+                    self.lista_musicas.append([x])
+            except:
+                pass
+
         self.tela.tabela_musicas = []
 
 
         for i in range(len(self.lista_musicas)):
-
             musica_atual = self.pasta_selecionada + self.lista_musicas[i][0]
 
             try:
-                artista = stagger.read_tag(musica_atual)
+                artista = str(File(musica_atual)["TPE1"])
 
-            except stagger.errors.NoTagError:
+            except KeyError:
                 self.tela.tabela_musicas.append([self.lista_musicas[i][0].split(".mp3")[0]])
-                excp = 1
 
             else:
-                if artista.artist != "":
-                    self.tela.tabela_musicas.append([artista.artist + " - " + self.lista_musicas[i][0].split(".mp3")[0]])
-                else:
-                    self.tela.tabela_musicas.append([self.lista_musicas[i][0].split(".mp3")[0]])
+                self.tela.tabela_musicas.append([artista + " - " + self.lista_musicas[i][0].split(".mp3")[0]])
+
 
         for i in range(len(self.lista_musicas)):
             try:
-                self.lista_musicas[i].append(stagger.read_tag(self.pasta_selecionada + self.lista_musicas[i][0]).artist)
-            except:
+                self.lista_musicas[i].append(str(File(self.pasta_selecionada + self.lista_musicas[i][0])["TPE1"]))
+            except KeyError:
                 self.lista_musicas[i].append("")
-
-
-        if excp == 1:
-            self.tela.msg("Existem arquivos nesta pasta que não estão em formato MP3 ou suas tags não estão corretamente configuradas, portanto, eles não serão exibidos.")
 
 
         self.tela.tela_principal["musicas"].update(values=self.tela.tabela_musicas)
 
             
-
 
     def tocar_especifica(self, indice=None):
         if indice != None:
@@ -117,12 +129,12 @@ class Player:
     def tocar_aleatorio(self):
         indice_selecionado_antigo = self.indice_selecionado
 
-        if len(self.random_hist) == len(self.lista_musicas):
+        if len(self.random_hist) == len(self.lista_musicas):        
             self.random_hist.clear()
         
         random = randrange(0,len(self.lista_musicas))
 
-        while random in self.random_hist:
+        while random in self.random_hist:                           # se o novo indice ja tiver sido tocado tenta dnv
             random = randrange(0,len(self.lista_musicas))
     
         self.indice_selecionado = random
@@ -138,8 +150,6 @@ class Player:
 
         self.tela.nome_musica = musica_atual.split("/")[len(musica_atual.split("/"))-1].split(".mp3")[0]
 
-        #self.tela.tela_principal.refresh()
-
         self.tela.tela_principal["musica"].update(self.tela.nome_musica)
         self.tela.tela_principal["artista"].update(artista)
 
@@ -151,18 +161,18 @@ class Player:
 
     def alt_volume(self, volume: float):
         self.mixer.set_volume(volume)
-        self.volume = volume
+        self.volume_atual = volume
 
-        if self.volume == 0:
-            self.tela.tela_principal["vol"].update(image_filename=f"spotify de pobre/icones/mudo.png", image_subsample=16)
+        if self.volume_atual == 0:
+            self.tela.tela_principal["vol"].update(image_filename=f"{self.path_icones}/mudo.png", image_subsample=16)
             
         else:
-            if self.volume <= 0.3:
-                self.tela.tela_principal["vol"].update(image_filename=f"spotify de pobre/icones/baixo.png", image_subsample=16)
-            elif self.volume <= 0.7:
-                self.tela.tela_principal["vol"].update(image_filename=f"spotify de pobre/icones/medio.png", image_subsample=16)
-            elif self.volume <= 1:
-                self.tela.tela_principal["vol"].update(image_filename=f"spotify de pobre/icones/alto.png", image_subsample=16)
+            if self.volume_atual <= 0.3:
+                self.tela.tela_principal["vol"].update(image_filename=f"{self.path_icones}/baixo.png", image_subsample=16)
+            elif self.volume_atual <= 0.7:
+                self.tela.tela_principal["vol"].update(image_filename=f"{self.path_icones}/medio.png", image_subsample=16)
+            elif self.volume_atual <= 1:
+                self.tela.tela_principal["vol"].update(image_filename=f"{self.path_icones}/alto.png", image_subsample=16)
 
 
     def proximo_aleatorio(self):
@@ -180,7 +190,6 @@ class Player:
 
 
     def anterior_aleatorio(self):
-
         if len(self.historico_musicas_indice) != 0:
             self.indice_selecionado = self.historico_musicas_indice[0]
             self.historico_musicas_indice.pop(0)
@@ -202,7 +211,7 @@ class Player:
             self.tocar_especifica()
 
 
-    def passar_musica_infinito(self):
+    def passar_musica_infinito(self):           # thread: ao acabar musica, toca a proxima
         adctempo = 0
 
         while True:
@@ -243,33 +252,32 @@ class Player:
         return indice
 
 
-    def img_album(self):
+    def img_album(self):                # muda tamanho img do album e salva como imagem para ser carregada pela tela
         try:
             audio = File(self.pasta_selecionada + self.lista_musicas[self.indice_selecionado][0])
             img = Image.open(BytesIO(audio['APIC:e'].data))
             img = img.resize((265,265))
-            img.save("spotify de pobre/icones/temp.png", "PNG")
-            self.tela.tela_principal["img"].update(source="spotify de pobre/icones/temp.png", subsample=2)
+            img.save(f"{self.path_icones}/temp.png", "PNG")
+            self.tela.tela_principal["img"].update(source=f"{self.path_icones}/temp.png", subsample=2)
             self.tela.tela_principal["frame_img"].update(visible=True)
         except KeyError:
-            self.tela.tela_principal["img"].update(source="spotify de pobre/icones/padrao.png", subsample=2)
+            self.tela.tela_principal["img"].update(source=f"{self.path_icones}/padrao.png", subsample=2)
             self.tela.tela_principal["frame_img"].update(visible=True)
 
 
 
     def check_botao(self, botao, valores = None):
-        #if valores != None:
         self.indice_playlist = valores["playlist"]
         self.aleatorio = valores["aleatorio"]
 
         if botao == "vol":                                          #mutar (clicar icone som)
-            if self.volume != 0:
-                self.volume_padrao = self.volume
+            if self.volume_atual != 0:
+                self.volume_padrao = self.volume_atual
                 self.alt_volume(0)
                 self.tela.tela_principal["sl"].update(0)
             else:
                 self.alt_volume(self.volume_padrao)
-                self.tela.tela_principal["sl"].update(self.volume*10)
+                self.tela.tela_principal["sl"].update(self.volume_atual*10)
         
 
         elif botao == 1 and self.indice_playlist != []:                # play \ pausar
@@ -342,13 +350,13 @@ class Player:
                 self.tocar_especifica(valores["musicas"])
          
 
-        #update na imagem do botao play/pause se ele mudar        
-        self.tela.tela_principal[1].update(image_filename=f"spotify de pobre/icones/{self.playpause}.png", image_subsample=40, image_size=(30,30), button_color=(sg.theme_background_color(), sg.theme_background_color()))
+        # update na imagem do botao play/pause se ele mudar        
+        self.tela.tela_principal[1].update(image_filename=f"{self.path_icones}/{self.playpause}.png", image_subsample=40, image_size=(30,30), button_color=(sg.theme_background_color(), sg.theme_background_color()))
 
 
-    def listen_botoes_media(self):
+    def listen_botoes_midia(self):      #listener botoes de midia
         def on_press(key):
-            valores = {'playlist': self.indice_playlist, 'musicas': self.indice_selecionado, 'aleatorio': self.aleatorio, 'browse': '', 'sl': self.volume*10}
+            valores = {'playlist': self.indice_playlist, 'musicas': self.indice_selecionado, 'aleatorio': self.aleatorio, 'browse': '', 'sl': self.volume_atual*10}
 
             if key == Key.media_play_pause:
                 self.check_botao(1, valores)

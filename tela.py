@@ -1,18 +1,14 @@
-import os
-from io import BytesIO
-
-import mutagen
 import PySimpleGUI as sg
-from PIL import Image
 
 
 class Tela:
     def __init__(self, controlador):
         self.controlador = controlador
         self.tela_principal = None
-        self.path_icones = r"spotify de pobre/icones"
+        self.path_icones = ""
         self.tabela_musicas = []
         self.nome_musica = ""                   #no momento sem utilidade
+        self.icone = ""
 
     def init_tela_principal(self):
         # sg.ChangeLookAndFeel("black")
@@ -150,8 +146,9 @@ class Tela:
         ]
 
 
-        self.tela_principal = sg.Window("Spotify de Pobre", element_padding=(
-            0, 0), resizable=False, element_justification='c', margins=(0,0)).Layout(layout)
+
+        self.tela_principal = sg.Window("Player de Pobre", element_padding=(
+            0, 0), resizable=False, element_justification='c', margins=(0,0), icon=f"{self.path_icones}/icone.ico").Layout(layout)
         self.tela_principal.finalize()
 
 
@@ -159,4 +156,7 @@ class Tela:
         return self.tela_principal.Read()
 
     def msg(self, msg):
-        sg.Popup(msg)
+        sg.Popup(msg,)
+
+    def msg_baixando(self):
+        sg.Popup("CARREGANDO", auto_close=True, non_blocking=True)
