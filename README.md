@@ -19,22 +19,22 @@ O objetivo do programa é substituir outros programas para reprodução de arqui
 **Design e cores temporárias**
 
 ## Como Usar
-- **Baixe os 3 arquivos .py e coloque-os na pasta de sua preferencia, em seguida rode o arquivo main.py**
+- **Baixe os 3 arquivos .py e coloque-os na pasta de sua preferência, em seguida rode o arquivo main.py**
 
 - Comece clicando no botão Pasta para selecionar o caminho no qual estão separadas suas playlists em pastas, como na imagem:
 ![pastas](https://user-images.githubusercontent.com/11367867/162610691-7ff52891-d89c-4c22-8285-2f715399affc.png "Pastas")  
-- Dentro de cada pasta (playlist) deverão estar contidas as musicas em MP3  
+- Dentro de cada pasta (playlist) deverão estar contidas as músicas em MP3  
 - Após selecionar, clique duas vezes na playlist que deseja exibir, na aba Playlist:  
 ![Screenshot_3](https://user-images.githubusercontent.com/11367867/162610782-bc9365d1-5e97-425d-983d-1b4125837141.jpg "Playlist")  
-- Agora você poderá escolher uma musica para tocar na aba Música clicando duas vezes em uma específica ou clicando em Play
-- O volume pode ser ajustado arrastando a barra ao lado do icone de som. Ao clicar no icone o som irá alternar entre ligado/desligado
+- Agora você poderá escolher uma música para tocar na aba Música clicando duas vezes em uma específica ou clicando em Play
+- O volume pode ser ajustado arrastando a barra ao lado do ícone de som. Ao clicar no ícone o som irá alternar entre ligado/desligado
 
 
 
 ## A Fazer
 - [ ] Slider Responsivo
 - [ ] Interface Bonita
-- [ ] Navegaçao Completa Pelas Pastas
+- [ ] Navegação Completa Pelas Pastas
 
 ## Contato
 
