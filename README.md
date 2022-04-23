@@ -19,6 +19,8 @@ O objetivo do programa é substituir outros programas para reprodução de arqui
 **Design e cores temporárias**
 
 ## Como Usar
+- **Baixe os 3 arquivos .py e coloque-os na pasta de sua preferencia, em seguida rode o arquivo main.py**
+
 - Comece clicando no botão Pasta para selecionar o caminho no qual estão separadas suas playlists em pastas, como na imagem:
 ![pastas](https://user-images.githubusercontent.com/11367867/162610691-7ff52891-d89c-4c22-8285-2f715399affc.png "Pastas")  
 - Dentro de cada pasta (playlist) deverão estar contidas as musicas em MP3  
