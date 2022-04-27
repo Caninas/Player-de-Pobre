@@ -20,8 +20,7 @@ class Player:
         mixer.init() 
         
         self.musica_tocando = ""
-        self.k = 0
-        
+        self.k = 0                      # 0 = primeira run do codigo
 
         self.mixer = mixer.music
         self.mixer_puro = mixer
@@ -49,6 +48,7 @@ class Player:
 
         self.tela = Tela(self)
 
+
     def carregar_pasta(self):                       # carrega playlists da sessao passada
         try:
             self.path_pastas = pickle.load(open(f"{self.path_dados}/persist.pkl", "rb"))
@@ -65,7 +65,7 @@ class Player:
 
         self.tela.tela_principal["playlist"].update(values=self.pastas)
 
-    def selecionar_playlist(self, pasta_selecionada: int):      #formata as musicas da playlist selecionada e mostra na tela
+    def selecionar_playlist(self, pasta_selecionada: int):      # formata as musicas da playlist selecionada e mostra na tela
         excp = 0
         self.pasta_selecionada = f"{self.path_pastas}/{self.pastas[pasta_selecionada[0]][0]}/"
         self.lista_musicas = []
@@ -107,7 +107,7 @@ class Player:
 
     def tocar_especifica(self, indice=None):
         if indice != None:
-            self.indice_selecionado  = self.transformar_indice(indice)
+            self.indice_selecionado  = 0 if (indice == [] or indice == None) else indice[0]
 
         if self.lista_musicas[self.indice_selecionado][0] != "":
             musica_atual = self.pasta_selecionada + self.lista_musicas[self.indice_selecionado][0]
@@ -115,7 +115,6 @@ class Player:
             self.mixer.load(musica_atual)
             self.mixer.play()
             self.musica_tocando = MP3(musica_atual)
-
 
             artista = self.lista_musicas[self.indice_selecionado][1]
 
@@ -144,7 +143,6 @@ class Player:
         self.mixer.load(musica_atual)
         self.mixer.play()
         self.musica_tocando = MP3(musica_atual)
-
 
         artista = self.lista_musicas[self.indice_selecionado][1]
 
@@ -180,7 +178,7 @@ class Player:
         self.tocar_aleatorio()
 
     def proximo_normal(self):
-        if self.indice_selecionado == len(self.lista_musicas)-1:
+        if self.indice_selecionado == len(self.lista_musicas) - 1:
             self.indice_selecionado = 0
             self.tocar_especifica()
         else:
@@ -220,10 +218,7 @@ class Player:
             if self.mixer.get_busy() == False and self.playpause != "play":
                 self.trocou = True
 
-                if self.aleatorio == True: 
-                    self.proximo_aleatorio()
-                else:
-                    self.proximo_normal()
+                self.proximo_aleatorio() if self.aleatorio == True else self.proximo_normal() #?
             
             if self.trocou == True:
                 adctempo = 0
@@ -243,15 +238,6 @@ class Player:
             sleep(1)
 
 
-    def transformar_indice(self, indice):
-        if indice == [] or indice == None:
-            indice = 0
-        else:
-            indice = indice[0]
-
-        return indice
-
-
     def img_album(self):                # muda tamanho img do album e salva como imagem para ser carregada pela tela
         try:
             audio = File(self.pasta_selecionada + self.lista_musicas[self.indice_selecionado][0])
@@ -265,12 +251,12 @@ class Player:
             self.tela.tela_principal["frame_img"].update(visible=True)
 
 
-
     def check_botao(self, botao, valores = None):
         self.indice_playlist = valores["playlist"]
         self.aleatorio = valores["aleatorio"]
 
-        if botao == "vol":                                          #mutar (clicar icone som)
+
+        if botao == "vol":                                          # mutar (clicar icone som)
             if self.volume_atual != 0:
                 self.volume_padrao = self.volume_atual
                 self.alt_volume(0)
@@ -283,15 +269,15 @@ class Player:
         elif botao == 1 and self.indice_playlist != []:                # play \ pausar
             if self.playpause == "play":
                 self.playpause = "pause"
-                if valores["aleatorio"] == True and self.mixer.get_busy() == False:           #aleatorio
+                if valores["aleatorio"] == True and self.mixer.get_busy() == False:           # aleatorio
                     if valores["musicas"] == []:
                         self.tocar_aleatorio()
                     elif valores["musicas"] != []:
                         self.mixer.unpause()
 
-                elif valores["aleatorio"] == False and self.mixer.get_busy() == False:        #normal
-                    if self.k == 0:                            #enquanto nao der play na musica seta o valor para 0, evita erros com o indice selecionado
-                        valores["musicas"] = [0]          #e toca a primeira
+                elif valores["aleatorio"] == False and self.mixer.get_busy() == False:        # normal
+                    if self.k == 0:                            # enquanto nao der play na musica seta o valor para 0, evita erros com o indice selecionado
+                        valores["musicas"] = [0]               # e toca a primeira
                         self.tocar_especifica()   
                     else:
                         self.mixer.unpause()
@@ -301,49 +287,51 @@ class Player:
                 self.mixer.pause()
         
 
-        elif botao == 0 and self.indice_playlist != []:                 #anterior
+        elif botao == 0 and self.indice_playlist != []:     # anterior
             self.trocou = True
 
-            if self.playpause == "play":                     #muda botao se estiver pausado
+            if self.playpause == "play":                    # muda botao se estiver pausado
                 self.playpause = "pause"
 
-            if self.k == 0:                              #enquanto nao der play na musica seta o valor para 0, evita erros com o indice selecionado
+            if self.k == 0:                                 # enquanto nao der play na musica seta o valor para 0, evita erros com o indice selecionado
                 valores["musicas"] = [0]
 
-            if valores["aleatorio"] == True:                    #aleatorio
+            if valores["aleatorio"] == True:                # aleatorio
                 self.anterior_aleatorio()
 
-            elif valores["aleatorio"] == False:                 #normal
+            elif valores["aleatorio"] == False:             # normal
                 self.anterior_normal()
 
 
-        elif botao == 2 and self.indice_playlist != []:                  #proximo
+        elif botao == 2 and self.indice_playlist != []:     # proximo
             
             self.trocou = True
 
             if self.playpause == "play":
                 self.playpause = "pause"
 
-            if valores["aleatorio"] == True:                        #aleatorio
+            if valores["aleatorio"] == True:                         # aleatorio
                 self.proximo_aleatorio()
 
-            elif valores["aleatorio"] == False and self.k == 0:      #normal 1º
+            elif valores["aleatorio"] == False and self.k == 0:      # normal 1º
                 valores["musicas"] = [0]
                 self.indice_selecionado = -1
                 self.proximo_normal()
 
-            elif valores["aleatorio"] == False:                     #normal
+            elif valores["aleatorio"] == False:                      # normal
                 self.proximo_normal()
 
 
-        if botao == "browse":                                       #abrir pasta com as playlists(mostra playlists na esquerda)
+        if botao == "browse":                                        # abrir pasta com as playlists(mostra playlists na esquerda)
             if valores["browse"] != "":
                 self.mostrar_playlists(valores["browse"])
 
-        if botao == "playlist" and self.indice_playlist != []:       #selecionou uma playlist, mostra na direita
+
+        if botao == "playlist" and self.indice_playlist != []:       # selecionou uma playlist, mostra na direita
             self.selecionar_playlist(self.indice_playlist)
 
-        if botao == "musicas" and valores["musicas"] != []:         #play na coluna selecionada
+
+        if botao == "musicas" and valores["musicas"] != []:          # play na coluna selecionada
             self.trocou = True
             if self.playpause == "play" or self.playpause == "pause":
                 self.playpause = "pause"
@@ -366,7 +354,6 @@ class Player:
 
             elif key == Key.media_previous:
                 self.check_botao(0, valores)
-
 
 
         botoes_media = Listener(on_press=on_press, onrelease=None)
