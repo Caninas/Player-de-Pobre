@@ -49,11 +49,8 @@ if __name__ == "__main__":
     player.playpause = "play"
 
     player.tela.init_tela_principal()
-
     player.carregar_pasta()
     player.listen_botoes_midia()
-
-    player.k = 0
     
     while True:
         botao, valores = player.tela.abrir()

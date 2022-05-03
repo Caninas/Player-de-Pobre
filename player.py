@@ -21,6 +21,7 @@ class Player:
         
         self.musica_tocando = ""
         self.k = 0                      # 0 = primeira run do codigo
+        self.i = 0
 
         self.mixer = mixer.music
         self.mixer_puro = mixer
@@ -103,11 +104,10 @@ class Player:
 
         self.tela.tela_principal["musicas"].update(values=self.tela.tabela_musicas)
 
-            
 
     def tocar_especifica(self, indice=None):
         if indice != None:
-            self.indice_selecionado  = 0 if (indice == [] or indice == None) else indice[0]
+            self.indice_selecionado  = 0 if (indice == [] or indice == None) else indice
 
         if self.lista_musicas[self.indice_selecionado][0] != "":
             musica_atual = self.pasta_selecionada + self.lista_musicas[self.indice_selecionado][0]
@@ -126,12 +126,15 @@ class Player:
             self.img_album()
 
     def tocar_aleatorio(self):
+        #try:
+        random = randrange(0,len(self.lista_musicas))
+        #except ValueError:
+           # return
+
         indice_selecionado_antigo = self.indice_selecionado
 
         if len(self.random_hist) == len(self.lista_musicas):        
             self.random_hist.clear()
-        
-        random = randrange(0,len(self.lista_musicas))
 
         while random in self.random_hist:                           # se o novo indice ja tiver sido tocado tenta dnv
             random = randrange(0,len(self.lista_musicas))
@@ -153,7 +156,7 @@ class Player:
 
         self.tela.tela_principal["musicas"].update(select_rows=([self.indice_selecionado]))
 
-        self.historico_musicas_indice.insert(0, indice_selecionado_antigo)
+        self.historico_musicas_indice.append(indice_selecionado_antigo)
         self.img_album()
 
 
@@ -175,7 +178,12 @@ class Player:
 
     def proximo_aleatorio(self):
         self.mixer.unload()
+        #if self.historico_musicas_indice == []:
         self.tocar_aleatorio()
+        #else:
+            #if self.i == 
+        #self.tocar_especifica(len(self.historico_musicas_indice) - 1) - self.i)
+            #self.i += 1
 
     def proximo_normal(self):
         if self.indice_selecionado == len(self.lista_musicas) - 1:
@@ -189,15 +197,14 @@ class Player:
 
     def anterior_aleatorio(self):
         if len(self.historico_musicas_indice) != 0:
-            self.indice_selecionado = self.historico_musicas_indice[0]
-            self.historico_musicas_indice.pop(0)
+            self.indice_selecionado = self.historico_musicas_indice[-1]
+            self.historico_musicas_indice.pop(-1)
 
             self.mixer.unload()
             self.tocar_especifica()
 
         else:
             self.tocar_aleatorio()
-            self.historico_musicas_indice = []
 
     def anterior_normal(self):
         if self.indice_selecionado != 0:
@@ -218,7 +225,7 @@ class Player:
             if self.mixer.get_busy() == False and self.playpause != "play":
                 self.trocou = True
 
-                self.proximo_aleatorio() if self.aleatorio == True else self.proximo_normal() #?
+                self.proximo_aleatorio() if self.aleatorio == True else self.proximo_normal()
             
             if self.trocou == True:
                 adctempo = 0
@@ -242,7 +249,7 @@ class Player:
         try:
             audio = File(self.pasta_selecionada + self.lista_musicas[self.indice_selecionado][0])
             img = Image.open(BytesIO(audio['APIC:e'].data))
-            img = img.resize((265,265))
+            img = img.resize((290,290))
             img.save(f"{self.path_icones}/temp.png", "PNG")
             self.tela.tela_principal["img"].update(source=f"{self.path_icones}/temp.png", subsample=2)
             self.tela.tela_principal["frame_img"].update(visible=True)
@@ -269,13 +276,13 @@ class Player:
         elif botao == 1 and self.indice_playlist != []:                # play \ pausar
             if self.playpause == "play":
                 self.playpause = "pause"
-                if valores["aleatorio"] == True and self.mixer.get_busy() == False:           # aleatorio
-                    if valores["musicas"] == []:
+                if valores["aleatorio"] == True:           # aleatorio
+                    if self.k == 0:
                         self.tocar_aleatorio()
                     elif valores["musicas"] != []:
                         self.mixer.unpause()
 
-                elif valores["aleatorio"] == False and self.mixer.get_busy() == False:        # normal
+                elif valores["aleatorio"] == False:        # normal
                     if self.k == 0:                            # enquanto nao der play na musica seta o valor para 0, evita erros com o indice selecionado
                         valores["musicas"] = [0]               # e toca a primeira
                         self.tocar_especifica()   
@@ -332,10 +339,13 @@ class Player:
 
 
         if botao == "musicas" and valores["musicas"] != []:          # play na coluna selecionada
+            self.random_hist.clear()
+            self.historico_musicas_indice.clear()
+
             self.trocou = True
             if self.playpause == "play" or self.playpause == "pause":
                 self.playpause = "pause"
-                self.tocar_especifica(valores["musicas"])
+                self.tocar_especifica(valores["musicas"][0])
          
 
         # update na imagem do botao play/pause se ele mudar        

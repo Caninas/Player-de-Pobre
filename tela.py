@@ -11,7 +11,7 @@ class Tela:
         self.icone = ""
 
     def init_tela_principal(self):
-        # sg.ChangeLookAndFeel("black")
+        #sg.ChangeLookAndFeel("Reddit")
         sg.LOOK_AND_FEEL_TABLE['MyCreatedTheme'] = {'BACKGROUND': '#4f4a4a',
                                                     'TEXT': '#FFFFFF',
                                                     'INPUT': '#5777f7',
@@ -28,12 +28,13 @@ class Tela:
             [
                 sg.Table(values="",  key="playlist",
                          num_rows=15,
-                         headings=[" Playlist "],
+                         headings=["   Playlist   "],
                          justification="left",
                          enable_click_events=True,
                          bind_return_key=True,
                          max_col_width=15,
-                         pad=((0, 0), (0, 0)))
+                         pad=((0, 0), (0, 0)), 
+                         hide_vertical_scroll=True)
             ],
 
             [
@@ -55,7 +56,7 @@ class Tela:
                          auto_size_columns=False,
                          def_col_width=83,  
                          enable_click_events=False,
-                         bind_return_key=True,)
+                         bind_return_key=True)
                          #pad=((0, 0), (0, 0)))
             ],
 
@@ -97,7 +98,7 @@ class Tela:
                                 ], border_width=0),
                         ]
 
-                    ], pad=((125, 0), (0, 0)), element_justification="c"
+                    ], pad=((115, 0), (13, 28)), element_justification="c"
                 ),
 
 
@@ -106,7 +107,7 @@ class Tela:
                     [
                         [
                             sg.FolderBrowse(button_text="Pasta", key="browse", auto_size_button=True,
-                                            enable_events=True, pad=((10, 0), (10, 30)))
+                                            enable_events=True, pad=((0, 0), (10, 30)))
                         ],
 
 
@@ -121,7 +122,7 @@ class Tela:
                                         15, 13), orientation='horizontal', enable_events=True, border_width=0, resolution=0.5, pad=((5, 0), (0, 0)))
                                 ]],
 
-                                pad=((125, 0), (0, 55)), border_width=0
+                                pad=((115, 0), (0, 55)), border_width=0
                             )
                         ]
 
@@ -150,7 +151,6 @@ class Tela:
         self.tela_principal = sg.Window("Player de Pobre", element_padding=(
             0, 0), resizable=False, element_justification='c', margins=(0,0), icon=f"{self.path_icones}/icone.ico").Layout(layout)
         self.tela_principal.finalize()
-
 
     def abrir(self):
         return self.tela_principal.Read()
