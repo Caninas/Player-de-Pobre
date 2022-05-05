@@ -28,12 +28,12 @@ class Tela:
             [
                 sg.Table(values="",  key="playlist",
                          num_rows=15,
-                         headings=["   Playlist   "],
+                         headings=["  Playlist  "],
                          justification="left",
                          enable_click_events=True,
                          bind_return_key=True,
                          max_col_width=15,
-                         pad=((0, 0), (0, 0)), 
+                         #pad=((0, 0), (0, 0)), 
                          hide_vertical_scroll=True)
             ],
 
@@ -122,11 +122,11 @@ class Tela:
                                         15, 13), orientation='horizontal', enable_events=True, border_width=0, resolution=0.5, pad=((5, 0), (0, 0)))
                                 ]],
 
-                                pad=((115, 0), (0, 55)), border_width=0
+                                pad=((0, 0), (0, 55)), border_width=0
                             )
                         ]
 
-                    ], element_justification="right"
+                    ], pad=((115, 0), (0, 0)), element_justification="right"
                 )
             ]
         ]

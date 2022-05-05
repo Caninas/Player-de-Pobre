@@ -126,10 +126,7 @@ class Player:
             self.img_album()
 
     def tocar_aleatorio(self):
-        #try:
         random = randrange(0,len(self.lista_musicas))
-        #except ValueError:
-           # return
 
         indice_selecionado_antigo = self.indice_selecionado
 
@@ -238,9 +235,12 @@ class Player:
 
             try:
                 self.tela.tela_principal["tempo"].update(strftime("%M:%S", gmtime(int(str(self.mixer.get_pos())[:(len(str(self.mixer.get_pos()))-3)]))))
+            except RuntimeError:
+                print("RuntimeError")
+                self.tela.tela_principal["tempo"].update(strftime("%M:%S", gmtime(int(str(self.mixer.get_pos())[:(len(str(self.mixer.get_pos()))-3)]))))
             except:
+                print("0")
                 self.tela.tela_principal["tempo"].update(strftime("%M:%S", gmtime(0)))
-            
             
             sleep(1)
 
@@ -254,6 +254,9 @@ class Player:
             self.tela.tela_principal["img"].update(source=f"{self.path_icones}/temp.png", subsample=2)
             self.tela.tela_principal["frame_img"].update(visible=True)
         except KeyError:
+            img = Image.open(f"{self.path_icones}/padrao.png")
+            img = img.resize((290,290))
+            img.save(f"{self.path_icones}/padrao.png", "PNG")
             self.tela.tela_principal["img"].update(source=f"{self.path_icones}/padrao.png", subsample=2)
             self.tela.tela_principal["frame_img"].update(visible=True)
 
