@@ -3,6 +3,7 @@ from pathlib import Path
 from shutil import rmtree
 from threading import Thread
 from urllib import request
+from sys import exit
 
 from PySimpleGUI import WIN_CLOSED
 
@@ -49,14 +50,14 @@ if __name__ == "__main__":
     player.playpause = "play"
 
     player.tela.init_tela_principal()
-    player.carregar_pasta()
+    player.carregar_sessao()
     player.listen_botoes_midia()
     
     while True:
         botao, valores = player.tela.abrir()
 
         if botao == WIN_CLOSED:
-            exit(0)
+            exit()
 
         player.alt_volume(valores["sl"]/10)
 

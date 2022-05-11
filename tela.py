@@ -2,8 +2,8 @@ import PySimpleGUI as sg
 
 
 class Tela:
-    def __init__(self, controlador):
-        self.controlador = controlador
+    def __init__(self):
+        #self.controlador = controlador
         self.tela_principal = None
         self.path_icones = ""
         self.tabela_musicas = []
@@ -79,6 +79,7 @@ class Tela:
                             sg.ProgressBar(100, key="pb", size=(35, 10))
                         ],
 
+
                         [
                             sg.Frame("", 
                                 [
@@ -106,10 +107,11 @@ class Tela:
                 (
                     [
                         [
+                            #sg.Button(button_text="Atualizar", key="update", auto_size_button=True,     #nao funciona com o browse
+                                            #pad=((0, 5), (10, 30))),
                             sg.FolderBrowse(button_text="Pasta", key="browse", auto_size_button=True,
                                             enable_events=True, pad=((0, 0), (10, 30)))
                         ],
-
 
                         [
                             sg.Frame

@@ -1,9 +1,9 @@
 import pickle
 from io import BytesIO
-from os import listdir, path, scandir
+from os import listdir, path, scandir, stat
 from os.path import isdir
 from random import randrange
-from time import gmtime, sleep, strftime
+from time import gmtime, sleep, strftime, time_ns
 
 import PySimpleGUI as sg
 from mutagen import File
@@ -22,6 +22,7 @@ class Player:
         self.musica_tocando = ""
         self.k = 0                      # 0 = primeira run do codigo
         self.i = 0
+        self.cache = {}
 
         self.mixer = mixer.music
         self.mixer_puro = mixer
@@ -47,62 +48,78 @@ class Player:
         self.volume_padrao = 0.5
         self.volume_atual = 0.5
 
-        self.tela = Tela(self)
+        self.tela = Tela()
 
 
-    def carregar_pasta(self):                       # carrega playlists da sessao passada
-        try:
-            self.path_pastas = pickle.load(open(f"{self.path_dados}/persist.pkl", "rb"))
-            self.mostrar_playlists()
-        except:
-            pass
+    def carregar_sessao(self):                       # carrega playlists da sessao passada
+        #try:
+        self.path_pastas = pickle.load(open(f"{self.path_dados}/pasta", "rb"))
+        self.mostrar_playlists()
+        #except:
+           # pass
+
 
     def mostrar_playlists(self, path = None):       # mostra playlist do browse ou historico, alem de formatar para mostrar na tela
         if path != None:
             self.path_pastas = path
-            pickle.dump(self.path_pastas, open(f"{self.path_dados}/persist.pkl", "wb"))
+            pickle.dump(self.path_pastas, open(f"{self.path_dados}/pasta", "wb"))
 
         self.pastas = [[y.split("\\")[1]] for y in [x.path for x in scandir(f"{self.path_pastas}") if isdir(x)]]
-
         self.tela.tela_principal["playlist"].update(values=self.pastas)
 
     def selecionar_playlist(self, pasta_selecionada: int):      # formata as musicas da playlist selecionada e mostra na tela
         excp = 0
         self.pasta_selecionada = f"{self.path_pastas}/{self.pastas[pasta_selecionada[0]][0]}/"
-        self.lista_musicas = []
 
-        for x in listdir(self.pasta_selecionada):
+        if self.pastas[pasta_selecionada[0]][0] in self.cache:
+            self.lista_musicas =  self.cache[self.pastas[pasta_selecionada[0]][0]][0]
+            self.tela.tabela_musicas = self.cache[self.pastas[pasta_selecionada[0]][0]][1]
+
+            self.tela.tela_principal["musicas"].update(values=self.tela.tabela_musicas)
+            
+        else:
+            self.lista_musicas = []
+            tempo1 = time_ns()
             try:
-                x2 = x.split(".")
-                if not isdir(x) and x2[len(x2)-1] == "mp3":           #! mudar dps para poder selecionar dir
-                    self.lista_musicas.append([x])
-            except:
+                for x in listdir(self.pasta_selecionada):
+                    try:
+                        x2 = x.split(".")
+                        if not isdir(x) and x2[len(x2)-1] == "mp3":           #! mudar dps para poder selecionar dir
+                            self.lista_musicas.append([x])
+                        else:
+                            raise Exception
+                    except:
+                        pass
+                    else:
+                        musica_atual = self.pasta_selecionada + x
+
+                        try:
+                            artista = str(File(musica_atual)["TPE1"])
+
+                        except:
+                            self.lista_musicas[-1].append("")
+
+                        else:
+
+                            self.lista_musicas[-1].append(str(File(self.pasta_selecionada + x)["TPE1"]))
+            except PermissionError:
                 pass
 
-        self.tela.tabela_musicas = []
+            self.tela.tabela_musicas = []
+
+            # organizar por data de criação
+            self.lista_musicas.sort(key=lambda x: stat(f"{self.pasta_selecionada}/{x[0]}").st_ctime, reverse=True)
+
+            for i in range(len(self.lista_musicas)):
+                if self.lista_musicas[i][1] == "":
+                    self.tela.tabela_musicas.append([self.lista_musicas[i][0].split(".mp3")[0]])
+                else:
+                    self.tela.tabela_musicas.append([self.lista_musicas[i][1] + " - " + self.lista_musicas[i][0].split(".mp3")[0]])
 
 
-        for i in range(len(self.lista_musicas)):
-            musica_atual = self.pasta_selecionada + self.lista_musicas[i][0]
+            self.tela.tela_principal["musicas"].update(values=self.tela.tabela_musicas)
 
-            try:
-                artista = str(File(musica_atual)["TPE1"])
-
-            except KeyError:
-                self.tela.tabela_musicas.append([self.lista_musicas[i][0].split(".mp3")[0]])
-
-            else:
-                self.tela.tabela_musicas.append([artista + " - " + self.lista_musicas[i][0].split(".mp3")[0]])
-
-
-        for i in range(len(self.lista_musicas)):
-            try:
-                self.lista_musicas[i].append(str(File(self.pasta_selecionada + self.lista_musicas[i][0])["TPE1"]))
-            except KeyError:
-                self.lista_musicas[i].append("")
-
-
-        self.tela.tela_principal["musicas"].update(values=self.tela.tabela_musicas)
+            self.cache[self.pastas[pasta_selecionada[0]][0]] = [self.lista_musicas, self.tela.tabela_musicas]
 
 
     def tocar_especifica(self, indice=None):
@@ -111,19 +128,21 @@ class Player:
 
         if self.lista_musicas[self.indice_selecionado][0] != "":
             musica_atual = self.pasta_selecionada + self.lista_musicas[self.indice_selecionado][0]
-        
-            self.mixer.load(musica_atual)
-            self.mixer.play()
-            self.musica_tocando = MP3(musica_atual)
+            try:
+                self.mixer.load(musica_atual)
+                self.mixer.play()
+                self.musica_tocando = MP3(musica_atual)
 
-            artista = self.lista_musicas[self.indice_selecionado][1]
+                artista = self.lista_musicas[self.indice_selecionado][1]
 
-            self.tela.nome_musica = musica_atual.split("/")[len(musica_atual.split("/"))-1].split(".mp3")[0]
-            self.tela.tela_principal["musica"].update(self.tela.nome_musica)
-            self.tela.tela_principal["artista"].update(artista)
+                self.tela.nome_musica = musica_atual.split("/")[len(musica_atual.split("/"))-1].split(".mp3")[0]
+                self.tela.tela_principal["musica"].update(self.tela.nome_musica)
+                self.tela.tela_principal["artista"].update(artista)
 
-            self.tela.tela_principal["musicas"].update(select_rows=([self.indice_selecionado]))
-            self.img_album()
+                self.tela.tela_principal["musicas"].update(select_rows=([self.indice_selecionado]))
+                self.img_album()
+            except:
+                pass
 
     def tocar_aleatorio(self):
         random = randrange(0,len(self.lista_musicas))
@@ -175,12 +194,8 @@ class Player:
 
     def proximo_aleatorio(self):
         self.mixer.unload()
-        #if self.historico_musicas_indice == []:
         self.tocar_aleatorio()
-        #else:
-            #if self.i == 
-        #self.tocar_especifica(len(self.historico_musicas_indice) - 1) - self.i)
-            #self.i += 1
+
 
     def proximo_normal(self):
         if self.indice_selecionado == len(self.lista_musicas) - 1:
@@ -215,13 +230,11 @@ class Player:
 
     def passar_musica_infinito(self):           # thread: ao acabar musica, toca a proxima
         adctempo = 0
-
         while True:
             tempo100 = 100/self.musica_tocando.info.length
             
             if self.mixer.get_busy() == False and self.playpause != "play":
                 self.trocou = True
-
                 self.proximo_aleatorio() if self.aleatorio == True else self.proximo_normal()
             
             if self.trocou == True:
@@ -236,10 +249,9 @@ class Player:
             try:
                 self.tela.tela_principal["tempo"].update(strftime("%M:%S", gmtime(int(str(self.mixer.get_pos())[:(len(str(self.mixer.get_pos()))-3)]))))
             except RuntimeError:
-                print("RuntimeError")
+                sleep(2)
                 self.tela.tela_principal["tempo"].update(strftime("%M:%S", gmtime(int(str(self.mixer.get_pos())[:(len(str(self.mixer.get_pos()))-3)]))))
             except:
-                print("0")
                 self.tela.tela_principal["tempo"].update(strftime("%M:%S", gmtime(0)))
             
             sleep(1)
@@ -331,6 +343,9 @@ class Player:
             elif valores["aleatorio"] == False:                      # normal
                 self.proximo_normal()
 
+        if botao == "update" and self.indice_playlist != []:
+            del self.cache[self.pastas[self.indice_playlist[0]][0]]
+            self.selecionar_playlist(self.indice_playlist)
 
         if botao == "browse":                                        # abrir pasta com as playlists(mostra playlists na esquerda)
             if valores["browse"] != "":
