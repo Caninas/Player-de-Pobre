@@ -52,11 +52,11 @@ class Player:
 
 
     def carregar_sessao(self):                       # carrega playlists da sessao passada
-        #try:
-        self.path_pastas = pickle.load(open(f"{self.path_dados}/pasta", "rb"))
-        self.mostrar_playlists()
-        #except:
-           # pass
+        try:   
+            self.path_pastas = pickle.load(open(f"{self.path_dados}/pasta", "rb"))
+            self.mostrar_playlists()
+        except:
+            pass
 
 
     def mostrar_playlists(self, path = None):       # mostra playlist do browse ou historico, alem de formatar para mostrar na tela
