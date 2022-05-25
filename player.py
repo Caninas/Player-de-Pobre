@@ -63,7 +63,7 @@ class Player:
         if path != None:
             self.path_pastas = path
             pickle.dump(self.path_pastas, open(f"{self.path_dados}/pasta", "wb"))
-
+            
         self.pastas = [[y.split("\\")[1]] for y in [x.path for x in scandir(f"{self.path_pastas}") if isdir(x)]]
         self.tela.tela_principal["playlist"].update(values=self.pastas)
 
@@ -289,6 +289,7 @@ class Player:
         
 
         elif botao == 1 and self.indice_playlist != []:                # play \ pausar
+            #! selecionar a playlist (1 clique) dps dar play error, retorna indice selecionado erroneamente
             if self.playpause == "play":
                 self.playpause = "pause"
                 if valores["aleatorio"] == True:           # aleatorio
@@ -343,9 +344,9 @@ class Player:
             elif valores["aleatorio"] == False:                      # normal
                 self.proximo_normal()
 
-        if botao == "update" and self.indice_playlist != []:
-            del self.cache[self.pastas[self.indice_playlist[0]][0]]
-            self.selecionar_playlist(self.indice_playlist)
+        #if botao == "update" and self.indice_playlist != []:
+           # del self.cache[self.pastas[self.indice_playlist[0]][0]]
+           # self.selecionar_playlist(self.indice_playlist)
 
         if botao == "browse":                                        # abrir pasta com as playlists(mostra playlists na esquerda)
             if valores["browse"] != "":
@@ -372,16 +373,19 @@ class Player:
 
     def listen_botoes_midia(self):      #listener botoes de midia
         def on_press(key):
-            valores = {'playlist': self.indice_playlist, 'musicas': self.indice_selecionado, 'aleatorio': self.aleatorio, 'browse': '', 'sl': self.volume_atual*10}
+            try:
+                valores = {'playlist': self.indice_playlist, 'musicas': self.indice_selecionado, 'aleatorio': self.aleatorio, 'browse': '', 'sl': self.volume_atual*10}
 
-            if key == Key.media_play_pause:
-                self.check_botao(1, valores)
+                if key == Key.media_play_pause:
+                    self.check_botao(1, valores)
 
-            elif key == Key.media_next:
-                self.check_botao(2, valores)
+                elif key == Key.media_next:
+                    self.check_botao(2, valores)
 
-            elif key == Key.media_previous:
-                self.check_botao(0, valores)
+                elif key == Key.media_previous:
+                    self.check_botao(0, valores)
+            except IndexError:
+                pass
 
 
         botoes_media = Listener(on_press=on_press, onrelease=None)

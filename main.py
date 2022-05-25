@@ -59,7 +59,7 @@ if __name__ == "__main__":
         if botao == WIN_CLOSED:
             exit()
 
-        player.alt_volume(valores["sl"]/10)
+        player.alt_volume(valores["sl"]/10) #!
 
         player.check_botao(botao, valores)
 
