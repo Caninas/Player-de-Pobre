@@ -1,4 +1,4 @@
-import os
+from os import path, listdir, makedirs
 from pathlib import Path
 from shutil import rmtree
 from threading import Thread
@@ -17,14 +17,14 @@ def criar_arq_locais():         # baixa icones e os coloca na pasta do programa 
             "icone.ico": "https://drive.google.com/uc?export=download&id=1CfBUVfOW8FeNMgRSG-lGofRAGY85lM83"}
 
 
-    if not os.path.isdir(f"{path_local}/icones") or len(os.listdir(f"{path_local}/icones")) < 10:
+    if not path.isdir(f"{path_local}/icones") or len(listdir(f"{path_local}/icones")) < 10:
         try:
-            if len(os.listdir(f"{path_local}/icones")) < 10:
+            if len(listdir(f"{path_local}/icones")) < 10:
                 rmtree(f"{path_local}/icones")
         except:
             pass
 
-        os.makedirs(f"{path_local}/icones")
+        makedirs(f"{path_local}/icones")
         player.tela.msg_baixando()
         request.urlretrieve(arqs["padrao.png"], f"{path_local}/icones/padrao.png")
         request.urlretrieve(arqs["anterior.png"], f"{path_local}/icones/anterior.png")

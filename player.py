@@ -1,11 +1,11 @@
-import pickle
+from pickle import dump, load
 from io import BytesIO
 from os import listdir, path, scandir, stat
 from os.path import isdir
 from random import randrange
-from time import gmtime, sleep, strftime, time_ns
+from time import gmtime, sleep, strftime
 
-import PySimpleGUI as sg
+from PySimpleGUI import theme_background_color
 from mutagen import File
 from mutagen.mp3 import MP3
 from PIL import Image
@@ -53,7 +53,7 @@ class Player:
 
     def carregar_sessao(self):                       # carrega playlists da sessao passada
         try:   
-            self.path_pastas = pickle.load(open(f"{self.path_dados}/pasta", "rb"))
+            self.path_pastas = load(open(f"{self.path_dados}/pasta", "rb"))
             self.mostrar_playlists()
         except:
             pass
@@ -62,13 +62,12 @@ class Player:
     def mostrar_playlists(self, path = None):       # mostra playlist do browse ou historico, alem de formatar para mostrar na tela
         if path != None:
             self.path_pastas = path
-            pickle.dump(self.path_pastas, open(f"{self.path_dados}/pasta", "wb"))
-            
+            dump(self.path_pastas, open(f"{self.path_dados}/pasta", "wb"))
+
         self.pastas = [[y.split("\\")[1]] for y in [x.path for x in scandir(f"{self.path_pastas}") if isdir(x)]]
         self.tela.tela_principal["playlist"].update(values=self.pastas)
 
     def selecionar_playlist(self, pasta_selecionada: int):      # formata as musicas da playlist selecionada e mostra na tela
-        excp = 0
         self.pasta_selecionada = f"{self.path_pastas}/{self.pastas[pasta_selecionada[0]][0]}/"
 
         if self.pastas[pasta_selecionada[0]][0] in self.cache:
@@ -79,42 +78,34 @@ class Player:
             
         else:
             self.lista_musicas = []
-            tempo1 = time_ns()
-            try:
-                for x in listdir(self.pasta_selecionada):
-                    try:
-                        x2 = x.split(".")
-                        if not isdir(x) and x2[len(x2)-1] == "mp3":           #! mudar dps para poder selecionar dir
-                            self.lista_musicas.append([x])
-                        else:
-                            raise Exception
-                    except:
-                        pass
-                    else:
-                        musica_atual = self.pasta_selecionada + x
 
-                        try:
-                            artista = str(File(musica_atual)["TPE1"])
+            listadir = listdir(self.pasta_selecionada)
 
-                        except:
-                            self.lista_musicas[-1].append("")
-
-                        else:
-
-                            self.lista_musicas[-1].append(str(File(self.pasta_selecionada + x)["TPE1"]))
-            except PermissionError:
-                pass
+            # organizar por data de criação             
+            listadir.sort(key=lambda x: stat(f"{self.pasta_selecionada}/{x}").st_ctime, reverse=True)
 
             self.tela.tabela_musicas = []
 
-            # organizar por data de criação
-            self.lista_musicas.sort(key=lambda x: stat(f"{self.pasta_selecionada}/{x[0]}").st_ctime, reverse=True)
-
-            for i in range(len(self.lista_musicas)):
-                if self.lista_musicas[i][1] == "":
-                    self.tela.tabela_musicas.append([self.lista_musicas[i][0].split(".mp3")[0]])
+            for i, x in enumerate(listadir):
+                x2 = x.split(".")
+                if not isdir(x) and x2[len(x2)-1] == "mp3":           #? mudar dps para poder selecionar dir
+                    self.lista_musicas.append([x])
                 else:
-                    self.tela.tabela_musicas.append([self.lista_musicas[i][1] + " - " + self.lista_musicas[i][0].split(".mp3")[0]])
+                    continue
+
+                musica_atual = self.pasta_selecionada + x
+
+                try:
+                    artista = str(File(musica_atual, easy=True)['artist'][0])
+                    self.lista_musicas[-1].append(artista)                      # bottleneck resolvido (File)
+                except:
+                    self.lista_musicas[-1].append("")
+
+
+                if self.lista_musicas[-1][1] == "":
+                    self.tela.tabela_musicas.append([self.lista_musicas[-1][0].split(".mp3")[0]])
+                else:
+                    self.tela.tabela_musicas.append([self.lista_musicas[-1][1] + " - " + self.lista_musicas[-1][0].split(".mp3")[0]])
 
 
             self.tela.tela_principal["musicas"].update(values=self.tela.tabela_musicas)
@@ -182,7 +173,7 @@ class Player:
 
         if self.volume_atual == 0:
             self.tela.tela_principal["vol"].update(image_filename=f"{self.path_icones}/mudo.png", image_subsample=16)
-            
+
         else:
             if self.volume_atual <= 0.3:
                 self.tela.tela_principal["vol"].update(image_filename=f"{self.path_icones}/baixo.png", image_subsample=16)
@@ -248,8 +239,8 @@ class Player:
 
             try:
                 self.tela.tela_principal["tempo"].update(strftime("%M:%S", gmtime(int(str(self.mixer.get_pos())[:(len(str(self.mixer.get_pos()))-3)]))))
-            except RuntimeError:
-                sleep(2)
+            except RuntimeError:    # em computadores mais lentos ao selecionar outra pasta a GUI trava por muito tempo
+                sleep(2)            # e crasha se estiver tocando alguma musica
                 self.tela.tela_principal["tempo"].update(strftime("%M:%S", gmtime(int(str(self.mixer.get_pos())[:(len(str(self.mixer.get_pos()))-3)]))))
             except:
                 self.tela.tela_principal["tempo"].update(strftime("%M:%S", gmtime(0)))
@@ -368,7 +359,7 @@ class Player:
          
 
         # update na imagem do botao play/pause se ele mudar        
-        self.tela.tela_principal[1].update(image_filename=f"{self.path_icones}/{self.playpause}.png", image_subsample=40, image_size=(30,30), button_color=(sg.theme_background_color(), sg.theme_background_color()))
+        self.tela.tela_principal[1].update(image_filename=f"{self.path_icones}/{self.playpause}.png", image_subsample=40, image_size=(30,30), button_color=(theme_background_color(), theme_background_color()))
 
 
     def listen_botoes_midia(self):      #listener botoes de midia
