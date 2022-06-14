@@ -255,13 +255,13 @@ class Player:
             img = img.resize((290,290))
             img.save(f"{self.path_icones}/temp.png", "PNG")
             self.tela.tela_principal["img"].update(source=f"{self.path_icones}/temp.png", subsample=2)
-            self.tela.tela_principal["frame_img"].update(visible=True)
         except KeyError:
             img = Image.open(f"{self.path_icones}/padrao.png")
             img = img.resize((290,290))
             img.save(f"{self.path_icones}/padrao.png", "PNG")
             self.tela.tela_principal["img"].update(source=f"{self.path_icones}/padrao.png", subsample=2)
-            self.tela.tela_principal["frame_img"].update(visible=True)
+        
+        self.tela.tela_principal["frame_img"].update(visible=True)
 
 
     def check_botao(self, botao, valores = None):
