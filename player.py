@@ -115,7 +115,7 @@ class Player:
 
     def tocar_especifica(self, indice=None):
         if indice != None:
-            self.indice_selecionado  = 0 if (indice == [] or indice == None) else indice
+            self.indice_selecionado = 0 if (indice == [] or indice == None) else indice
 
         if self.lista_musicas[self.indice_selecionado][0] != "":
             musica_atual = self.pasta_selecionada + self.lista_musicas[self.indice_selecionado][0]
