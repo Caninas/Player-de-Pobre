@@ -11,9 +11,9 @@ from player import Player
 
 
 def criar_arq_locais():         # baixa icones e os coloca na pasta do programa na appdata
-    arqs = {"padrao.png": "https://i.imgur.com/BIwtdPV.png", "anterior.png": "https://i.imgur.com/zR5ipb0.png", "pause.png": "https://i.imgur.com/TgaiItf.png",
-            "play.png": "https://i.imgur.com/DZS8uSg.png", "proximo.png": "https://i.imgur.com/ellbdlv.png", "mudo.png": "https://i.imgur.com/Di2NhDZ.png",
-            "baixo.png": "https://i.imgur.com/UnUxdj3.png", "medio.png": "https://i.imgur.com/FkgKiIv.png", "alto.png": "https://i.imgur.com/2o93beu.png",
+    arqs = {"padrao.png": "https://images2.imgbox.com/50/01/YsRTXVYA_o.png", "anterior.png": "https://images2.imgbox.com/38/f8/WHPA58Zt_o.png", "pause.png": "https://images2.imgbox.com/8b/a3/P4xKWey9_o.png",
+            "play.png": "https://images2.imgbox.com/57/3e/lckshfVs_o.png", "proximo.png": "https://images2.imgbox.com/34/63/FgVzWKzV_o.png", "mudo.png": "https://images2.imgbox.com/bf/01/3gm8AIUy_o.png",
+            "baixo.png": "https://images2.imgbox.com/19/76/wKJS53oh_o.png", "medio.png": "https://images2.imgbox.com/f1/a8/x55YkEpd_o.png", "alto.png": "https://images2.imgbox.com/26/7d/SblDwmnZ_o.png",
             "icone.ico": "https://drive.google.com/uc?export=download&id=1CfBUVfOW8FeNMgRSG-lGofRAGY85lM83"}
 
 
