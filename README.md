@@ -1,11 +1,13 @@
 # Player de Pobre
-O objetivo do programa é substituir outros programas para reprodução de arquivos locais, com funcionalidades objetivas, além de um design simples e funcional.  
+- _Desenvolvido no 2° semestre da faculdade (meu primeiro programa)_
+
+- Feito com o objetivo de substituir outros programas para reprodução de músicas locais, com funcionalidades simples e objetivas, além de um design funcional.  
   
-**Programado utilizando Python 3.10.4**
+- **Python 3.10.4**
 
 ## Funcionalidades:
 
- - Toca músicas em formato MP3, em modo aleatório ou não
+ - Toca músicas em formato MP3, em modo aleatório ou sequencial
  
  - Pasta raiz personalizável
 
